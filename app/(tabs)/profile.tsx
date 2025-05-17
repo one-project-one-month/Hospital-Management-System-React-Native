@@ -16,7 +16,16 @@ interface MenuItem {
 
 export default function ProfileScreen() {
   // Logout function
+  const { user } = useAuthStore();
   const logout = useAuthStore((state) => state.logout);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    await logout();
+    setIsLoading(false);
+  }
+  
   const [patients, setPatients] = useState([
     {
       id: 1,
@@ -61,11 +70,11 @@ export default function ProfileScreen() {
       <View className="bg-white p-6">
         <View className="items-center">
           <Image
-            source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+            source={{ uri: `https://ui-avatars.com/api/?name=${user?.name}&background=000&color=fff&length=2` }}
             className="w-24 h-24 rounded-full"
           />
-          <Text className="text-xl font-bold text-gray-800 mt-4">John Doe</Text>
-          <Text className="text-gray-500">john.doe@example.com</Text>
+          <Text className="text-xl font-bold text-gray-800 mt-4">{user?.name}</Text>
+          <Text className="text-gray-500">{user?.email}</Text>
           <Button variant="secondary" size="sm" className='mt-3' onPress={() => alert("Edit Profile")}>Edit Profile</Button>
         </View>
       </View>
@@ -90,7 +99,7 @@ export default function ProfileScreen() {
       <View className="mt-4 bg-white p-4">
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-lg font-bold text-gray-800">Patient Management</Text>
-          <Button size="sm" onPress={() => router.push('/patient-management')}>Manage Patients</Button>
+          <Button size="sm" onPress={() => router.push('/patient')}>Manage Patients</Button>
         </View>
         
         {patients.map((patient) => (
@@ -135,9 +144,9 @@ export default function ProfileScreen() {
       </View>
 
       {/* Logout Button */}
-      <TouchableOpacity onPress={logout} className="mx-4 my-6 bg-red-100 p-4 rounded-xl">
-        <Text className="text-red-600 text-center font-semibold">Logout</Text>
-      </TouchableOpacity>
+      <Button variant="danger" onPress={handleLogout} className="mx-4 my-6" isLoading={isLoading}>
+        Logout
+      </Button>
     </ScrollView>
   );
 } 

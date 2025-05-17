@@ -1,3 +1,4 @@
+import { FontAwesome6 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -68,14 +69,14 @@ export default function LoginScreen() {
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="flex-1 px-6 pt-12">
           {/* Header */}
           <View className="items-center mb-12">
-            <View className="w-20 h-20 bg-blue-100 rounded-full items-center justify-center mb-4">
-              <Text className="text-3xl font-bold text-blue-500">HMS</Text>
+            <View className="w-20 h-20 bg-gray-300 rounded-full items-center justify-center mb-4">
+              <Text className="text-3xl font-bold text-blue-500"><FontAwesome6 name="hospital" size={24} color="black" /></Text>
             </View>
             <Text className="text-2xl font-bold text-gray-900">
               Welcome Back
@@ -115,7 +116,7 @@ export default function LoginScreen() {
             />
 
             <TouchableOpacity className="items-end">
-              <Text className="text-blue-500 font-medium">
+              <Text className="text-gray-500 font-medium">
                 Forgot Password?
               </Text>
             </TouchableOpacity>
@@ -123,7 +124,7 @@ export default function LoginScreen() {
 
           {/* Login Button */}
           <View className="mt-8">
-            <Button onPress={handleLogin} isLoading={isLoading} size="lg">
+            <Button variant="secondary" onPress={handleLogin} isLoading={isLoading} size="lg">
               Sign In
             </Button>
           </View>
@@ -132,7 +133,7 @@ export default function LoginScreen() {
           <View className="flex-row justify-center mt-8">
             <Text className="text-gray-500">Don't have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/auth/register")}>
-              <Text className="text-blue-500 font-semibold">Sign Up</Text>
+              <Text className="text-gray-500 font-semibold">Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>

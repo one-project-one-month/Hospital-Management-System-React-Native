@@ -1,3 +1,4 @@
+import { FontAwesome6 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -40,7 +41,7 @@ export default function RegisterScreen() {
       await register(email, password, name);
       router.replace("/(tabs)");
     } catch (error: any) {
-      if (error.response?.data?.status === 'fail' && error.response?.data?.data) {
+      if (error.response?.data?.status === 'error' && error.response?.data?.data) {
         const validationErrors = error.response.data.data;
         setErrors({
           name: validationErrors.name?.[0],
@@ -62,14 +63,14 @@ export default function RegisterScreen() {
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="flex-1 px-6 pt-12">
           {/* Header */}
           <View className="items-center mb-12">
-            <View className="w-20 h-20 bg-blue-100 rounded-full items-center justify-center mb-4">
-              <Text className="text-3xl font-bold text-blue-500">HMS</Text>
+            <View className="w-20 h-20 bg-gray-300 rounded-full items-center justify-center mb-4">
+              <Text className="text-3xl font-bold text-blue-500"><FontAwesome6 name="hospital" size={24} color="black" /></Text>
             </View>
             <Text className="text-2xl font-bold text-gray-900">
               Create Account
@@ -123,7 +124,7 @@ export default function RegisterScreen() {
 
           {/* Register Button */}
           <View className="mt-8">
-            <Button onPress={handleRegister} isLoading={isLoading} size="lg">
+            <Button variant="secondary" onPress={handleRegister} isLoading={isLoading} size="lg">
               Create Account
             </Button>
           </View>
@@ -137,7 +138,7 @@ export default function RegisterScreen() {
           <View className="flex-row justify-center mt-8">
             <Text className="text-gray-500">Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/auth/login")}>
-              <Text className="text-blue-500 font-semibold">Sign In</Text>
+              <Text className="text-gray-500 font-semibold">Sign In</Text>
             </TouchableOpacity>
           </View>
         </View>

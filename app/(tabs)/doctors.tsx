@@ -126,7 +126,7 @@ export default function DoctorsScreen() {
                   </View>
                 </View>
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   size="sm"
                   onPress={() => {
                     setSelectedDoctor(doctor);

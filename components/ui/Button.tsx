@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 interface ButtonProps {
   onPress: () => void;
   children?: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'icon' | 'iconDanger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   disabled?: boolean;
@@ -30,6 +30,8 @@ export function Button({
     secondary: 'text-white',
     outline: 'text-gray-800',
     danger: 'text-red-600',
+    icon: 'text-gray-800',
+    iconDanger: 'text-red-600',
   };
 
   const variants = {
@@ -37,6 +39,8 @@ export function Button({
     secondary: 'bg-gray-800 active:bg-gray-300',
     outline: 'border border-gray-300 active:bg-gray-50',
     danger: 'bg-red-200 active:bg-red-600',
+    icon: 'bg-transparent',
+    iconDanger  : 'bg-transparent',
   };
 
   const sizes = {
@@ -59,7 +63,7 @@ export function Button({
     >
       {isLoading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? 'white' : '#000'}
+          color={variant === 'outline' ? '#000' : 'white'}
           size="small"
         />
       ) : (

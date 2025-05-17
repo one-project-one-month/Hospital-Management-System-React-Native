@@ -14,9 +14,9 @@ export function Input({ label, error, className, ...props }: InputProps) {
       )}
       <TextInput
         className={cn(
-          'h-13 px-3.5 rounded-lg bg-white',
+          'h-13 px-3.5 rounded-lg bg-gray-100',
           'border border-gray-200 text-[17px]',
-          'focus:border-blue-500',
+          'focus:border-gray-800',
           error && 'border-red-500',
           'active:bg-gray-50',
           className

@@ -1,36 +1,10 @@
+import { AuthState } from '@/lib/modelType';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { ToastAndroid } from 'react-native';
 import { create } from 'zustand';
 
 const API_URL = 'https://one-pj-one-month-may-hms-laravel.newway.com.mm/api/v1';
-
-type User = {
-  id: string;
-  email: string;
-  name: string;
-  roles?: string[];
-  created_at?: string;
-  updated_at?: string;
-};
-
-type ValidationError = {
-  status: 'fail';
-  statusCode: number;
-  message: string;
-  data: {
-    [key: string]: string[];
-  };
-};
-
-type AuthState = {
-  user: User | null;
-  isLoading: boolean;
-  token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => Promise<void>;
-  initialize: () => Promise<void>;
-};
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -41,12 +15,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const token = await SecureStore.getItemAsync('token');
       if (token) {
-        const response = await axios.get(`${API_URL}/auth/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        set({ user: response.data, token });
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const response = await axios.get(`${API_URL}/auth/user`);
+        set({ user: response.data, token: token });
       }
     } catch (error) {
       console.error('Error loading user:', error);
@@ -64,6 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       
       const { token, user } = response.data.data;
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       await SecureStore.setItemAsync('token', token);
       set({ user, token });
     } catch (error: any) {
@@ -84,11 +56,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
 
         const { token, user } = response.data.data;
-        // Ensure token is stored as a string
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         await SecureStore.setItemAsync('token', String(token));
         set({ user, token });
     } catch (error: any) {
-      if (error.response?.data?.status === 'fail') {
+      console.log(error.response.data);
+      if (error.response?.data?.status === 'error') {
         // Pass through validation errors
         throw error;
       }
@@ -98,9 +71,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await SecureStore.deleteItemAsync('token');
-      set({ user: null, token: null });
-    } catch (error) {
+      const token = await SecureStore.getItemAsync('token');
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        await axios.post(`${API_URL}/auth/logout`);
+        await SecureStore.deleteItemAsync('token');
+        set({ user: null, token: null });
+        axios.defaults.headers.common['Authorization'] = '';
+      }
+    } catch (error: any) {
+      ToastAndroid.show('Error logging out', ToastAndroid.SHORT);
       console.error('Error logging out:', error);
     }
   },

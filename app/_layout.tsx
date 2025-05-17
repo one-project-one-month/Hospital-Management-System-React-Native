@@ -57,8 +57,8 @@ function RootLayoutNav() {
         options={{ title: "Medical History"}}
       />
       <Stack.Screen
-        name="patient-management"
-        options={{ title: "Patient Management"}}
+        name="patient"
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="lab-results"
