@@ -1,9 +1,11 @@
 export type PatientState = {
-    patient: any;
+    patients: Patient[];
     storePatient: (patient: any) => void;
+    getPatient: () => void;
 };
 
 export type Patient = {
+    id: string;
     name: string;
     age: number;
     date_of_birth: string;
@@ -12,6 +14,7 @@ export type Patient = {
     address: string;
     relation: string;
     blood_type: string;
+    user_id?: number;
 }
 
 export type User = {

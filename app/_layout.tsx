@@ -10,7 +10,7 @@ function RootLayoutNav() {
 
   useEffect(() => {
     initialize();
-  }, []);
+  }, [initialize]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -24,7 +24,7 @@ function RootLayoutNav() {
       // Redirect to home if authenticated
       router.replace("/(tabs)");
     }
-  }, [user, segments, isLoading]);
+  }, [user, isLoading, segments, router]);
 
   if (isLoading) {
     return null;

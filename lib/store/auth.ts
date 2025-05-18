@@ -17,7 +17,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         const response = await axios.get(`${API_URL}/auth/user`);
-        set({ user: response.data, token: token });
+        set({ user: response.data.data.user, token: token });
       }
     } catch (error) {
       console.error('Error loading user:', error);
