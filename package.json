@@ -42,8 +42,11 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "~4.10.0",
+    "react-native-ui-datepicker": "^3.1.2",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
+    "react-native-z-view": "^0.2.4",
+    "sonner-native": "^0.20.0",
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^3.4.17",
     "zustand": "^5.0.4"

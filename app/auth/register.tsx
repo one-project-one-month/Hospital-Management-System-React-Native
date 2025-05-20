@@ -2,14 +2,14 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
+import { toast } from "sonner-native";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { useAuthStore } from "../../lib/store/auth";
@@ -40,6 +40,7 @@ export default function RegisterScreen() {
     try {
       await register(email, password, name);
       router.replace("/(tabs)");
+      toast.success('Registration successful');
     } catch (error: any) {
       if (error.response?.data?.status === 'error' && error.response?.data?.data) {
         const validationErrors = error.response.data.data;
@@ -49,7 +50,7 @@ export default function RegisterScreen() {
           password: validationErrors.password?.[0]
         });
       } else {
-        Alert.alert("Error", "Registration failed. Please try again.");
+        toast.error('Registration failed. Please try again.');
       }
     } finally {
       setIsLoading(false);

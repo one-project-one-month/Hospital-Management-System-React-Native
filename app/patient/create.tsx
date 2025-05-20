@@ -6,13 +6,15 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, ToastAndroid, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { toast } from 'sonner-native';
 
 export default function CreatePatientScreen() {
   const router = useRouter();
   const { storePatient } = usePatient();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [error, setError] = useState<any>({});
+  const [loading, setLoading] = useState(false);
   const [newPatient, setNewPatient] = useState({
     name: '',
     age: 0,
@@ -44,6 +46,7 @@ export default function CreatePatientScreen() {
   const handleAddPatient = async () => {
     if (newPatient.name && newPatient.age && newPatient.gender) {
       try {
+        setLoading(true);
         await storePatient({
           name: newPatient.name,
           age: newPatient.age,
@@ -69,8 +72,11 @@ export default function CreatePatientScreen() {
             blood_type: validationErrors.blood_type?.[0],
           });
         } else {
-          ToastAndroid.show(error.response.data.message, ToastAndroid.SHORT);
+          toast.error(error.response.data.message);
+
         }
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -98,7 +104,8 @@ export default function CreatePatientScreen() {
               label="Name"
               value={newPatient.name}
               onChangeText={(text) => setNewPatient({ ...newPatient, name: text })}
-              placeholder="Enter name"
+              error={error.name}
+              placeholder="San Lynn Htun"
             />
             <Input
               label="Age"
@@ -108,6 +115,7 @@ export default function CreatePatientScreen() {
               }
               placeholder="Enter age"
               keyboardType="numeric"
+              error={error.age}
             />
             <Select
               label="Gender"
@@ -115,25 +123,30 @@ export default function CreatePatientScreen() {
               onChange={(value) => setNewPatient({ ...newPatient, gender: value })}
               options={genderOptions}
               placeholder="Select gender"
+              error={error.gender}
             />
             <Input
               label="Phone"
               value={newPatient.phone}
               onChangeText={(text) => setNewPatient({ ...newPatient, phone: text })}
-              placeholder="Enter phone number"
+              placeholder="09xxxxxxxxx"
               keyboardType="phone-pad"
+              error={error.phone}
             />
             <Input
               label="Address"
               value={newPatient.address}
               onChangeText={(text) => setNewPatient({ ...newPatient, address: text })}
-              placeholder="Enter address"
+              placeholder="Yangon, Hlaing, etc."
+              multiline={true}
+              numberOfLines={4}
+              error={error.address}
             />
             <Input
               label="Relation"
               value={newPatient.relation}
               onChangeText={(text) => setNewPatient({ ...newPatient, relation: text })}
-              placeholder="Enter relation"
+              placeholder="Mother, Father, Sister, Brother, etc."
               error={error.relation}
             />
             <Select
@@ -142,6 +155,7 @@ export default function CreatePatientScreen() {
               onChange={(value) => setNewPatient({ ...newPatient, blood_type: value })}
               options={bloodTypeOptions}
               placeholder="Select blood type"
+              error={error.blood_type}
             />
             <Button
               variant="outline"
@@ -149,6 +163,9 @@ export default function CreatePatientScreen() {
             >
               Select Date of Birth
             </Button>
+            {error.date_of_birth && (
+              <Text className="text-[13px] text-red-500 mt-0.5">{error.date_of_birth}</Text>
+            )}
             {showDatePicker && (
               <DateTimePicker
                 value={new Date(newPatient.date_of_birth || new Date())}
@@ -168,6 +185,7 @@ export default function CreatePatientScreen() {
             <Button
               variant="secondary"
               onPress={handleAddPatient}
+              isLoading={loading}
               disabled={!newPatient.name || !newPatient.age || !newPatient.gender || !newPatient.relation || !newPatient.blood_type || !newPatient.date_of_birth}
               className="mt-4"
             >

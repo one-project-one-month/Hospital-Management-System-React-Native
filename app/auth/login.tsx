@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { toast } from "sonner-native";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { useAuthStore } from "../../lib/store/auth";
@@ -40,6 +41,7 @@ export default function LoginScreen() {
     try {
       await login(email, password);
       router.replace("/(tabs)");
+      toast.success('Login successful');
     } catch (error: any) {
       if (error.response?.data?.statusCode === 401) {
         setErrors({
@@ -56,6 +58,7 @@ export default function LoginScreen() {
         });
       } else {
         Alert.alert("Error", "Login failed. Please try again.");
+        toast.error('Login failed. Please try again.');
       }
     } finally {
       setIsLoading(false);

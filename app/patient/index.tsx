@@ -1,27 +1,49 @@
 import { Button } from '@/components/ui/Button';
+import { Loading } from '@/components/ui/Loading';
+import { NotFound } from '@/components/ui/NotFound';
 import { Patient } from '@/lib/modelType';
 import { usePatient } from '@/lib/store/usePatient';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { useEffect } from 'react';
-import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Toaster } from 'sonner-native';
+
 
 const API_URL = 'https://one-pj-one-month-may-hms-laravel.newway.com.mm/api/v1';
 
 export default function PatientManagementScreen() {
   const router = useRouter();
   const { patients, getPatient } = usePatient();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await getPatient();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchPatient = async () => {
-      await getPatient();
+      try {
+        await getPatient();
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchPatient();
-  }, [getPatient]);
+  }, []);
 
-  console.log('Component patients:', JSON.stringify(patients, null, 2));
 
   const handleDeletePatient = (id: string) => {
     const patient = patients?.find(p => p.id === id);
@@ -72,14 +94,6 @@ export default function PatientManagementScreen() {
     });
   };
 
-  if (!patients) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
@@ -89,14 +103,31 @@ export default function PatientManagementScreen() {
           variant="secondary"
           size="sm"
           onPress={() => router.push('/patient/create')}
-          className="rounded-full"
         >
           <Ionicons name="add" size={20} color="white" />
         </Button>
       </View>
 
-      <ScrollView className="flex-1">
-        {Array.isArray(patients) && patients.map((patient) => (
+      {loading ? (
+        <Loading />
+      ) : patients.length === 0 ? (
+        <ScrollView 
+          className="flex-1"
+          contentContainerStyle={{ flex: 1 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <NotFound message="No patients found" />
+        </ScrollView>
+      ) : (
+        <ScrollView 
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+        {patients.map((patient) => (
           <TouchableOpacity
             key={patient.id}
             onPress={() => handleEditPatient(patient)}
@@ -145,7 +176,9 @@ export default function PatientManagementScreen() {
             </View>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+        </ScrollView>
+      )}
+      <Toaster position="bottom-center" />
     </View>
   );
 }

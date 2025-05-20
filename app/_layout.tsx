@@ -1,5 +1,7 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 import { useAuthStore } from "../lib/store/auth";
 
@@ -40,7 +42,7 @@ function RootLayoutNav() {
         headerTintColor: "#000",
         headerTitleAlign: "center",
         headerShadowVisible: false,
-        headerBackTitle: "Back"
+        headerBackTitle: "Back",
       }}
     >
       <Stack.Screen
@@ -48,28 +50,25 @@ function RootLayoutNav() {
         options={{ title: "Login", headerBackVisible: false }}
       />
       <Stack.Screen name="auth/register" options={{ title: "Register" }} />
-      <Stack.Screen
-        name="(tabs)"
-        options={{ headerShown: false}}
-      />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="medical-history"
-        options={{ title: "Medical History"}}
+        options={{ title: "Medical History" }}
       />
-      <Stack.Screen
-        name="patient"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="lab-results"
-        options={{ title: "Lab Results"}}
-      />
+      <Stack.Screen name="patient" options={{ headerShown: false }} />
+      <Stack.Screen name="lab-results" options={{ title: "Lab Results" }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
-  return <RootLayoutNav />;
+  return (
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <RootLayoutNav />
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
+  );
 }
 
 export function TabsLayout() {
