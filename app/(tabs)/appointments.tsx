@@ -7,15 +7,16 @@ import { useAppointmentStore } from '@/lib/store/appointmentStore';
 import { useDoctor } from '@/lib/store/useDoctor';
 import { usePatient } from '@/lib/store/usePatient';
 import { Ionicons } from '@expo/vector-icons';
+import { useToastContext } from '@phonehtut/react-native-sonner';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useState } from 'react';
 import { Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { Toaster, toast } from 'sonner-native';
+
 export default function AppointmentsScreen() {
   const [activeTab, setActiveTab] = useState<'pending' | 'confirmed'>('pending');
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const { showToast } = useToastContext();
   const {
     selectedDoctor,
     selectedDate,
@@ -81,10 +82,10 @@ export default function AppointmentsScreen() {
     try {
       await bookAppointment();
       setShowNewAppointmentModal(false);
-      toast.success('Appointment booked successfully');
+      showToast('Appointment booked successfully', 'success');
     } catch (error) {
       console.log(error);
-      toast.error('Failed to book appointment');
+      showToast('Failed to book appointment', 'error');
     }
   };
 
@@ -326,7 +327,6 @@ export default function AppointmentsScreen() {
         </Button>
         </ScrollView>
       </Modal>
-      <Toaster position="bottom-center" />
     </View>
   );
 } 

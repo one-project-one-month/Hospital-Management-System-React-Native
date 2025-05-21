@@ -1,8 +1,8 @@
 export type PatientState = {
     patients: Patient[];
-    storePatient: (patient: any) => void;
+    storePatient: (patient: any, showToast: (message: string, type?: "error" | "success" | "info", duration?: number) => void) => void;
     getPatient: () => void;
-    deletePatient: (id: string) => void;
+    deletePatient: (id: string, showToast: (message: string, type?: "error" | "success" | "info", duration?: number) => void) => void;
 };
 
 export type AuthState = {

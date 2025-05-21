@@ -5,10 +5,9 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useAuthStore } from '@/lib/store/auth';
 import { Ionicons } from '@expo/vector-icons';
+import { useToastContext } from '@phonehtut/react-native-sonner';
 import { useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
-import { toast, Toaster } from 'sonner-native';
-
 
 const patients = [
   { label: 'John Doe', value: '1' },
@@ -29,6 +28,8 @@ export default function HomeScreen() {
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+
+  const { showToast } = useToastContext();
 
   const handleBookAppointment = () => {
     // Here you would typically make an API call to book the appointment
@@ -86,9 +87,7 @@ export default function HomeScreen() {
             <Button
               variant="secondary"
               onPress={() => {
-                toast.success('Hello, World!', {
-                  duration: 3000,
-                });
+                showToast('Hello, World!', 'success');
               }}
               // onPress={() => setShowBookingModal(true)}
               icon={<Ionicons name="calendar-outline" size={24} color="white" />}
@@ -181,9 +180,6 @@ export default function HomeScreen() {
           </Button>
         </Modal>
       </ScrollView>
-      <Toaster
-        position="bottom-center"
-      />
     </View>
   );
 } 

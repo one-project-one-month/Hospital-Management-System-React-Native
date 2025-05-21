@@ -3,11 +3,11 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { usePatient } from '@/lib/store/usePatient';
 import { Ionicons } from '@expo/vector-icons';
+import { useToastContext } from '@phonehtut/react-native-sonner';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { toast } from 'sonner-native';
 
 export default function CreatePatientScreen() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function CreatePatientScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [error, setError] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToastContext();
   const [newPatient, setNewPatient] = useState({
     name: '',
     age: 0,
@@ -56,7 +57,7 @@ export default function CreatePatientScreen() {
           relation: newPatient.relation || '',
           date_of_birth: newPatient.date_of_birth || '',
           blood_type: newPatient.blood_type || '',
-        });
+        }, showToast);
         router.back();
       } catch (error: any) {
         if (error.response?.data?.status === 'fail') {
@@ -72,8 +73,7 @@ export default function CreatePatientScreen() {
             blood_type: validationErrors.blood_type?.[0],
           });
         } else {
-          toast.error(error.response.data.message);
-
+          showToast(error.response.data.message, 'error');
         }
       } finally {
         setLoading(false);

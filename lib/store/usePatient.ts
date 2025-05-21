@@ -1,7 +1,6 @@
 import { Patient, PatientState } from "@/lib/modelType";
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
-import { toast } from "sonner-native";
 import { create } from "zustand";
 
 const API_URL = 'https://one-pj-one-month-may-hms-laravel.newway.com.mm/api/v1';
@@ -23,7 +22,7 @@ export const usePatient = create<PatientState>((set) => ({
     }
   },
 
-  storePatient: async (patient: Patient) => {
+  storePatient: async (patient: Patient, showToast: (message: string, type?: "error" | "success" | "info", duration?: number) => void) => {
     const token = await SecureStore.getItemAsync('token');
     try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -33,21 +32,21 @@ export const usePatient = create<PatientState>((set) => ({
             const newPatient = Array.isArray(response.data.data) ? response.data.data[0] : response.data.data;
             return { patients: [...state.patients, newPatient] };
         });
-        toast.success('Patient profile created');
+        showToast('Patient profile created', 'success');
     } catch (error: any) {
-        toast.error('Error creating patient profile');
+        showToast('Error creating patient profile', 'error');
         throw error;
     }
   },
 
-  deletePatient: async (id: string) => {
+  deletePatient: async (id: string, showToast: (message: string, type?: "error" | "success" | "info", duration?: number) => void) => {
     const token = await SecureStore.getItemAsync('token');
     try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         const response = await axios.delete(`${API_URL}/patient-profile/${id}`);
-        toast.success('Patient profile deleted');
+        showToast('Patient profile deleted', 'success');
     } catch (error: any) {
-        toast.error('Error deleting patient profile');
+        showToast('Error deleting patient profile', 'error');
         throw error;
     }
   }

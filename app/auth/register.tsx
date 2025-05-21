@@ -1,4 +1,5 @@
 import { FontAwesome6 } from "@expo/vector-icons";
+import { useToastContext } from "@phonehtut/react-native-sonner";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { toast } from "sonner-native";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { useAuthStore } from "../../lib/store/auth";
@@ -22,7 +22,8 @@ export default function RegisterScreen() {
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
   const router = useRouter();
   const register = useAuthStore((state) => state.register);
-
+  const { showToast } = useToastContext();
+  
   const handleRegister = async () => {
     // Clear previous errors
     setErrors({});
@@ -40,7 +41,7 @@ export default function RegisterScreen() {
     try {
       await register(email, password, name);
       router.replace("/(tabs)");
-      toast.success('Registration successful');
+      showToast('Registration successful', 'success');
     } catch (error: any) {
       if (error.response?.data?.status === 'error' && error.response?.data?.data) {
         const validationErrors = error.response.data.data;
@@ -50,7 +51,7 @@ export default function RegisterScreen() {
           password: validationErrors.password?.[0]
         });
       } else {
-        toast.error('Registration failed. Please try again.');
+        showToast('Registration failed. Please try again.', 'error');
       }
     } finally {
       setIsLoading(false);

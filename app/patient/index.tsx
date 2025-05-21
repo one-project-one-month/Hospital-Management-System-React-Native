@@ -4,21 +4,20 @@ import { NotFound } from '@/components/ui/NotFound';
 import { Patient } from '@/lib/modelType';
 import { usePatient } from '@/lib/store/usePatient';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
+import { useToastContext } from '@phonehtut/react-native-sonner';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { Alert, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { Toaster } from 'sonner-native';
 
 
 const API_URL = 'https://one-pj-one-month-may-hms-laravel.newway.com.mm/api/v1';
 
 export default function PatientManagementScreen() {
   const router = useRouter();
-  const { patients, getPatient } = usePatient();
+  const { patients, getPatient, deletePatient } = usePatient();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { showToast } = useToastContext();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -47,7 +46,6 @@ export default function PatientManagementScreen() {
 
   const handleDeletePatient = (id: string) => {
     const patient = patients?.find(p => p.id === id);
-    console.log('Found patient for delete:', JSON.stringify(patient, null, 2));
     Alert.alert(
       "Delete Patient",
       `Are you sure you want to delete ${patient?.name}?`,
@@ -61,14 +59,10 @@ export default function PatientManagementScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const token = await SecureStore.getItemAsync('token');
-              if (token) {
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                await axios.delete(`${API_URL}/patient-profile/${id}`);
-                await getPatient(); // Refresh the list
-              }
+              await deletePatient(id, showToast);
+              await getPatient(); // Refresh the list
             } catch (error) {
-              Alert.alert("Error", "Failed to delete patient");
+              console.error('Error deleting patient:', error);
             }
           },
         },
@@ -178,7 +172,6 @@ export default function PatientManagementScreen() {
         ))}
         </ScrollView>
       )}
-      <Toaster position="bottom-center" />
     </View>
   );
 }
