@@ -1,38 +1,11 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
-import { Appointment, Doctor, Patient } from '../modelType';
-interface TimeSlot {
-  time: string;
-  isAvailable: boolean;
-}
-
-interface DoctorAvailability {
-  [key: string]: string[];
-}
-
-interface AppointmentStore {
-  selectedDoctor: Doctor | null;
-  selectedDate: string | null;
-  selectedTime: string | null;
-  selectedPatient: Patient | null;
-  doctorAvailability: DoctorAvailability | null;
-  availableTimeSlots: TimeSlot[];
-  isLoading: boolean;
-  error: string | null;
-  appointments: Appointment[];
-  // Actions
-  selectDoctor: (doctor: Doctor) => Promise<void>;
-  selectDate: (date: string) => Promise<void>;
-  selectTime: (time: string) => void;
-  selectPatient: (patient: Patient) => void;
-  bookAppointment: () => Promise<void>;
-  getAppointments: () => Promise<void>;
-}
+import { AppointmentStoreState, Doctor, Patient } from '../modelType';
 
 const API_URL = 'https://one-pj-one-month-may-hms-laravel.newway.com.mm/api/v1';
 
-export const useAppointmentStore = create<AppointmentStore>((set, get) => ({
+export const useAppointmentStore = create<AppointmentStoreState>((set, get) => ({
   doctors: [],
   selectedDoctor: null,
   selectedDate: null,
@@ -43,6 +16,9 @@ export const useAppointmentStore = create<AppointmentStore>((set, get) => ({
   isLoading: false,
   error: null,
   appointments: [],
+  treatments: {},
+  labResults: {},
+  invoice: null,
 
   selectDoctor: async (doctor: Doctor) => {
     try {
@@ -143,6 +119,69 @@ export const useAppointmentStore = create<AppointmentStore>((set, get) => ({
       set({ appointments: response.data.data });
     } catch (error) {
       set({ error: 'Failed to fetch appointments', isLoading: false });
+    }
+  },
+
+  getTreatment: async (appointmentId: string) => {
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      set({ isLoading: true, error: null });
+      
+      const response = await axios.get(`${API_URL}/appointments/${appointmentId}/treatments`);
+      const data = response.data.data.treatments;
+      
+      // Update treatments in store
+      set({ treatments: data, isLoading: false });
+      console.log("Treatments", get().treatments);
+    } catch (error) {
+      console.error('Error fetching treatment:', error);
+      set({ 
+        error: 'Failed to fetch treatment details', 
+        isLoading: false 
+      });
+    }
+  },
+
+  getLabResult: async (appointmentId: string) => {
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      set({ isLoading: true, error: null });
+      
+      const response = await axios.get(`${API_URL}/appointments/${appointmentId}/lab-results`);
+      const data = response.data.data[0];
+      
+      // Update lab results in store
+      set({ labResults: data, isLoading: false });
+      console.log("Lab Results", get().labResults);
+    } catch (error) {
+      console.error('Error fetching lab results:', error);
+      set({ 
+        error: 'Failed to fetch lab results', 
+        isLoading: false 
+      });
+    }
+  },
+
+  getInvoice: async (appointmentId: string) => {
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      const response = await axios.get(`${API_URL}/invoice/${appointmentId}/invoice`);
+
+      const data = response.data.data.invoice[0];
+      
+      set({ invoice: data, isLoading: false });
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
+      set({ 
+        error: 'Failed to fetch invoice', 
+        isLoading: false 
+      });
     }
   }
 })); 

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Hospital Management System",
+    "name": "Hopi",
     "slug": "hms",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/hopi.png",
     "scheme": "hms",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/hopi.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.hms.app",
@@ -30,14 +30,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/hopi.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/hopi.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -48,6 +48,14 @@
         {
           "configureAndroidBackup": true,
           "iosBackupUsageDescription": "This app needs access to your secure storage to save your login data."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "The app needs access to your photos to save invoices.",
+          "savePhotosPermission": "The app needs access to your photos to save invoices.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],

@@ -39,11 +39,32 @@ export const usePatient = create<PatientState>((set) => ({
     }
   },
 
+  updatePatient: async (patient: Patient) => {
+    const token = await SecureStore.getItemAsync('token');
+    try {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        await axios.put(`${API_URL}/patient-profile/${patient.id}`, patient);
+
+        set((state) => {
+            const updatedPatient = state.patients.map((p) => p.id === patient.id ? patient : p);
+            return { patients: updatedPatient };
+        });
+    } catch (error: any) {
+        throw error;
+    }
+  },
+
   deletePatient: async (id: string, showToast: (message: string, type?: "error" | "success" | "info", duration?: number) => void) => {
     const token = await SecureStore.getItemAsync('token');
     try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         const response = await axios.delete(`${API_URL}/patient-profile/${id}`);
+
+        set((state) => {
+            const updatedPatient = state.patients.filter((p) => p.id !== id);
+            return { patients: updatedPatient };
+        });
+
         showToast('Patient profile deleted', 'success');
     } catch (error: any) {
         showToast('Error deleting patient profile', 'error');

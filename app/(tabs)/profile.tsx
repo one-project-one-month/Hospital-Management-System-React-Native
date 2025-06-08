@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/Button';
+import { usePatient } from '@/lib/store/usePatient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useAuthStore } from '../../lib/store/auth';
 
@@ -19,23 +20,16 @@ export default function ProfileScreen() {
   const { user } = useAuthStore();
   const logout = useAuthStore((state) => state.logout);
   const [isLoading, setIsLoading] = useState(false);
-
+  const { getPatient ,patients } = usePatient();
   const handleLogout = async () => {
     setIsLoading(true);
     await logout();
     setIsLoading(false);
   }
-  
-  const [patients, setPatients] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      age: 45,
-      gender: 'Male',
-      image: 'https://randomuser.me/api/portraits/men/1.jpg',
-    },
-    // Add more patients here
-  ]);
+
+  useEffect(() => {
+    getPatient();
+  }, []);
 
   const menuItems: MenuItem[] = [
     {
@@ -45,23 +39,7 @@ export default function ProfileScreen() {
       onPress: () => {
         // Handle personal information navigation
       },
-    },
-    {
-      icon: 'medical-outline',
-      title: 'Medical History',
-      subtitle: 'View your medical records',
-      onPress: () => {
-        router.push('/medical-history');
-      },
-    },
-    {
-      icon: 'document-text-outline',
-      title: 'Lab Results',
-      subtitle: 'View your test results',
-      onPress: () => {
-        router.push('/lab-results');
-      },
-    },
+    }
   ];
 
   return (
@@ -104,7 +82,7 @@ export default function ProfileScreen() {
         
         {patients.map((patient) => (
           <View key={patient.id} className="flex-row items-center p-3 border-b border-gray-100">
-            <Image source={{ uri: patient.image }} className="w-12 h-12 rounded-full" />
+            <Image source={{ uri: `https://ui-avatars.com/api/?name=${patient.name}&background=000&color=fff&length=2` }} className="w-12 h-12 rounded-full" />
             <View className="ml-3 flex-1">
               <Text className="font-semibold text-gray-800">{patient.name}</Text>
               <Text className="text-gray-500">{patient.age} years • {patient.gender}</Text>

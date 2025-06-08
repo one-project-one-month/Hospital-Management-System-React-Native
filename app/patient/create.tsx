@@ -2,12 +2,11 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { usePatient } from '@/lib/store/usePatient';
-import { Ionicons } from '@expo/vector-icons';
 import { useToastContext } from '@phonehtut/react-native-sonner';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, ScrollView, Text, TouchableWithoutFeedback, View } from 'react-native';
 
 export default function CreatePatientScreen() {
   const router = useRouter();
@@ -29,8 +28,7 @@ export default function CreatePatientScreen() {
 
   const genderOptions = [
     { label: 'Male', value: 'male' },
-    { label: 'Female', value: 'female' },
-    { label: 'Other', value: 'other' },
+    { label: 'Female', value: 'female' }
   ];
 
   const bloodTypeOptions = [
@@ -83,22 +81,17 @@ export default function CreatePatientScreen() {
 
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="padding"
       className="flex-1 bg-gray-50"
+      keyboardVerticalOffset={100}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1">
-          {/* Header */}
-          <View className="bg-white p-4 flex-row items-center border-b border-gray-200">
-            <TouchableOpacity onPress={() => router.back()} className="mr-4">
-              <Ionicons name="arrow-back" size={24} color="#374151" />
-            </TouchableOpacity>
-            <Text className="text-xl font-bold text-gray-800">Add New Patient</Text>
-          </View>
 
           <ScrollView className="flex-1 p-4"
             contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
             keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             <Input
               label="Name"
@@ -106,6 +99,7 @@ export default function CreatePatientScreen() {
               onChangeText={(text) => setNewPatient({ ...newPatient, name: text })}
               error={error.name}
               placeholder="San Lynn Htun"
+              autoCapitalize="words"
             />
             <Input
               label="Age"

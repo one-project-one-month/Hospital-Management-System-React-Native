@@ -1,32 +1,22 @@
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Patient } from '@/lib/modelType';
 import { usePatient } from '@/lib/store/usePatient';
-import { Ionicons } from '@expo/vector-icons';
+import { useToastContext } from '@phonehtut/react-native-sonner';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-
-interface Patient {
-  id: number;
-  name: string;
-  age: number;
-  gender: string;
-  phone: string;
-  address: string;
-  relation: string;
-  date_of_birth: string;
-  blood_type: string;
-}
+import { Keyboard, KeyboardAvoidingView, ScrollView, TouchableWithoutFeedback, View } from 'react-native';
 
 export default function EditPatientScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { storePatient } = usePatient();
+  const { updatePatient } = usePatient();
+  const { showToast } = useToastContext();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [patient, setPatient] = useState<Patient>({
-    id: Number(params.id),
+    id: params.id as string,
     name: params.name as string,
     age: Number(params.age),
     gender: params.gender as string,
@@ -36,17 +26,30 @@ export default function EditPatientScreen() {
     date_of_birth: params.date_of_birth as string,
     blood_type: params.blood_type as string,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const genderOptions = [
-    { label: 'Male', value: 'Male' },
-    { label: 'Female', value: 'Female' },
-    { label: 'Other', value: 'Other' },
+    { label: 'Male', value: 'male' },
+    { label: 'Female', value: 'female' }
+  ];
+
+  const bloodTypeOptions = [
+    { label: 'A+', value: 'A+' },
+    { label: 'A-', value: 'A-' },
+    { label: 'B+', value: 'B+' },
+    { label: 'B-', value: 'B-' },
+    { label: 'AB+', value: 'AB+' },
+    { label: 'AB-', value: 'AB-' },
+    { label: 'O+', value: 'O+' },
+    { label: 'O-', value: 'O-' },
   ];
 
   const handleEditPatient = async () => {
     if (patient.name && patient.age && patient.gender) {
       try {
-        await storePatient({
+        setIsLoading(true);
+        await updatePatient({
+          id: patient.id?.toString() || '',
           name: patient.name,
           age: patient.age,
           gender: patient.gender,
@@ -56,31 +59,30 @@ export default function EditPatientScreen() {
           date_of_birth: patient.date_of_birth || '',
           blood_type: patient.blood_type || '',
         });
+        showToast('Patient updated successfully', 'success');
         router.back();
-      } catch (error) {
-        console.error('Error updating patient:', error);
+      } catch (error: any) {
+        console.error('Error updating patient:', error.response.data.message);
+        showToast('Error updating patient', 'error');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="padding"
       className="flex-1 bg-gray-50"
+      keyboardVerticalOffset={100}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1">
-          {/* Header */}
-          <View className="bg-white p-4 flex-row items-center border-b border-gray-200">
-            <TouchableOpacity onPress={() => router.back()} className="mr-4">
-              <Ionicons name="arrow-back" size={24} color="#374151" />
-            </TouchableOpacity>
-            <Text className="text-xl font-bold text-gray-800">Edit Patient</Text>
-          </View>
 
           <ScrollView className="flex-1 p-4"
             contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
             keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             <Input
               label="Name"
@@ -121,13 +123,14 @@ export default function EditPatientScreen() {
               label="Relation"
               value={patient.relation}
               onChangeText={(text) => setPatient({ ...patient, relation: text })}
-              placeholder="Enter relation"
+              placeholder="Mother, Father, Sister, Brother, etc."
             />
-            <Input
+            <Select
               label="Blood Type"
               value={patient.blood_type}
-              onChangeText={(text) => setPatient({ ...patient, blood_type: text })}
-              placeholder="Enter blood type"
+              onChange={(value) => setPatient({ ...patient, blood_type: value })}
+              options={bloodTypeOptions}
+              placeholder="Select blood type"
             />
             <Button
               variant="outline"
@@ -152,10 +155,11 @@ export default function EditPatientScreen() {
               />
             )}
             <Button
-              variant="primary"
+              variant="secondary"
               onPress={handleEditPatient}
               disabled={!patient.name || !patient.age || !patient.gender}
               className="mt-4"
+              isLoading={isLoading}
             >
               Save Changes
             </Button>

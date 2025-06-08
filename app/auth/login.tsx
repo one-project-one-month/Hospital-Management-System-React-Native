@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -67,13 +66,15 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="padding"
       className="flex-1 bg-white"
+      keyboardVerticalOffset={100}
     >
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View className="flex-1 px-6 pt-12">
           {/* Header */}
@@ -114,6 +115,7 @@ export default function LoginScreen() {
                 setErrors((prev) => ({ ...prev, password: undefined }));
               }}
               secureTextEntry
+              autoCapitalize="none"
               autoComplete="password"
               error={errors.password}
             />

@@ -46,6 +46,8 @@ export default function PatientManagementScreen() {
 
   const handleDeletePatient = (id: string) => {
     const patient = patients?.find(p => p.id === id);
+    if (!patient?.id) return;
+    
     Alert.alert(
       "Delete Patient",
       `Are you sure you want to delete ${patient?.name}?`,
@@ -60,7 +62,6 @@ export default function PatientManagementScreen() {
           onPress: async () => {
             try {
               await deletePatient(id, showToast);
-              await getPatient(); // Refresh the list
             } catch (error) {
               console.error('Error deleting patient:', error);
             }
@@ -72,6 +73,8 @@ export default function PatientManagementScreen() {
   };
 
   const handleEditPatient = (patient: Patient) => {
+    if (!patient.id) return;
+    
     router.push({
       pathname: '/patient/edit',
       params: {
@@ -151,7 +154,7 @@ export default function PatientManagementScreen() {
                         <Ionicons name="create-outline" size={18} color="#6b7280" />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => handleDeletePatient(patient.id)}
+                        onPress={() => patient.id && handleDeletePatient(patient.id)}
                         className="p-2"
                       >
                         <Ionicons name="trash-outline" size={18} color="#ef4444" />

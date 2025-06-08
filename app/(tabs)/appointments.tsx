@@ -1,3 +1,4 @@
+import { AppointmentDetailsModal } from '@/components/AppointmentDetailsModal';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { Modal } from '@/components/ui/Modal';
@@ -16,6 +17,8 @@ export default function AppointmentsScreen() {
   const [activeTab, setActiveTab] = useState<'pending' | 'confirmed'>('pending');
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
   const { showToast } = useToastContext();
   const {
     selectedDoctor,
@@ -79,13 +82,21 @@ export default function AppointmentsScreen() {
   }, [getAppointments, getDoctor, getPatient]);
 
   const handleBookAppointment = async () => {
+    if (!selectedPatient || !selectedDoctor || !selectedDate || !selectedTime) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+
     try {
       await bookAppointment();
       setShowNewAppointmentModal(false);
       showToast('Appointment booked successfully', 'success');
-    } catch (error) {
+      // Refresh appointments list
+      await getAppointments();
+    } catch (error: any) {
       console.log(error);
-      showToast('Failed to book appointment', 'error');
+      const errorMessage = error.response?.data?.message || 'Failed to book appointment';
+      showToast(errorMessage, 'error');
     }
   };
 
@@ -220,6 +231,21 @@ export default function AppointmentsScreen() {
                   <Button variant="secondary" size="md" className='flex-1' onPress={() => alert("Reschedule")}>Reschedule</Button>
                 </View>
               )}
+              {appointment.status === 'confirmed' && (
+                <View className="flex-row mt-4">
+                  <Button 
+                    variant="secondary" 
+                    size="md" 
+                    className='flex-1' 
+                    onPress={() => {
+                      setSelectedAppointment(appointment);
+                      setShowAppointmentDetails(true);
+                    }}
+                  >
+                    View Details
+                  </Button>
+                </View>
+              )}
             </View>
           ))}
         </ScrollView>
@@ -243,7 +269,7 @@ export default function AppointmentsScreen() {
             const patient = patients.find(p => p.id === value);
             if (patient) selectPatient(patient);
           }}
-          options={patients.map(p => ({ label: p.name, value: p.id.toString() }))}
+          options={patients.map(p => ({ label: p.name, value: p.id?.toString() || '' }))}
           placeholder="Choose a patient"
         />
         
@@ -258,7 +284,7 @@ export default function AppointmentsScreen() {
           placeholder="Choose a doctor"
         />
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => setShowDatePicker(true)}
           className="mb-4"
         >
@@ -268,7 +294,11 @@ export default function AppointmentsScreen() {
               {selectedDate || 'Select date'}
             </Text>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+
+        <Button variant="outline" className='mb-4' onPress={() => setShowDatePicker(true)}>
+          {selectedDate || 'Select date'}
+        </Button>
 
         {showDatePicker && (
           <DateTimePicker
@@ -277,6 +307,7 @@ export default function AppointmentsScreen() {
             display="default"
             onChange={handleDateChange}
             minimumDate={new Date()}
+            maximumDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
           />
         )}
 
@@ -327,6 +358,16 @@ export default function AppointmentsScreen() {
         </Button>
         </ScrollView>
       </Modal>
+
+      {/* Appointment Details Modal */}
+      <AppointmentDetailsModal
+        visible={showAppointmentDetails}
+        onClose={() => {
+          setShowAppointmentDetails(false);
+          setSelectedAppointment(null);
+        }}
+        appointment={selectedAppointment}
+      />
     </View>
   );
 } 

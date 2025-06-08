@@ -1,53 +1,79 @@
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
-import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
+import { useAppointmentStore } from '@/lib/store/appointmentStore';
 import { useAuthStore } from '@/lib/store/auth';
+import { useDoctor } from '@/lib/store/useDoctor';
+import { usePatient } from '@/lib/store/usePatient';
 import { Ionicons } from '@expo/vector-icons';
 import { useToastContext } from '@phonehtut/react-native-sonner';
-import { useState } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
-
-const patients = [
-  { label: 'John Doe', value: '1' },
-  { label: 'Jane Smith', value: '2' },
-  { label: 'Mike Johnson', value: '3' },
-];
-
-const doctors = [
-  { label: 'Dr. Sarah Wilson', value: '1' },
-  { label: 'Dr. Michael Brown', value: '2' },
-  { label: 'Dr. Emily Davis', value: '3' },
-];
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useEffect, useState } from 'react';
+import { Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
-  const { user, isLoading } = useAuthStore();
+  const { user, isLoading: authLoading } = useAuthStore();
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState('');
-  const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { showToast } = useToastContext();
 
-  const handleBookAppointment = () => {
-    // Here you would typically make an API call to book the appointment
-    console.log('Booking appointment:', {
-      patient: selectedPatient,
-      doctor: selectedDoctor,
-      date: selectedDate,
-      time: selectedTime,
-    });
-    setShowBookingModal(false);
-    // Reset form
-    setSelectedPatient('');
-    setSelectedDoctor('');
-    setSelectedDate('');
-    setSelectedTime('');
+  const {
+    selectedDoctor,
+    selectedDate,
+    selectedTime,
+    selectedPatient,
+    availableTimeSlots,
+    isLoading: appointmentLoading,
+    error,
+    selectDoctor,
+    selectDate,
+    selectTime,
+    selectPatient,
+    bookAppointment,
+  } = useAppointmentStore();
+
+  const { getDoctor, doctors } = useDoctor();
+  const { getPatient, patients } = usePatient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onFormRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await getDoctor();
+      await getPatient();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    getDoctor();
+    getPatient();
+  }, [getDoctor, getPatient]);
+
+  const handleBookAppointment = async () => {
+    try {
+      await bookAppointment();
+      setShowBookingModal(false);
+      showToast('Appointment booked successfully', 'success');
+    } catch (error) {
+      console.log(error);
+      showToast('Failed to book appointment', 'error');
+    }
   };
 
-  if (isLoading) {
+  const handleDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0];
+      selectDate(formattedDate);
+    }
+  };
+
+  if (authLoading) {
     return (
       <View className="flex-1 items-center justify-center">
         <Text>Loading...</Text>
@@ -86,10 +112,7 @@ export default function HomeScreen() {
           <View className="mb-6">
             <Button
               variant="secondary"
-              onPress={() => {
-                showToast('Hello, World!', 'success');
-              }}
-              // onPress={() => setShowBookingModal(true)}
+              onPress={() => setShowBookingModal(true)}
               icon={<Ionicons name="calendar-outline" size={24} color="white" />}
             >
               Book Appointment
@@ -145,39 +168,102 @@ export default function HomeScreen() {
           onClose={() => setShowBookingModal(false)}
           title="Book Appointment"
         >
-          <Select
-            label="Select Patient"
-            value={selectedPatient}
-            onChange={setSelectedPatient}
-            options={patients}
-            placeholder="Choose a patient"
-          />
-          <Select
-            label="Select Doctor"
-            value={selectedDoctor}
-            onChange={setSelectedDoctor}
-            options={doctors}
-            placeholder="Choose a doctor"
-          />
-          <Input
-            label="Date"
-            value={selectedDate}
-            onChangeText={setSelectedDate}
-            placeholder="Select date (YYYY-MM-DD)"
-          />
-          <Input
-            label="Time"
-            value={selectedTime}
-            onChangeText={setSelectedTime}
-            placeholder="Select time (HH:MM)"
-          />
-          <Button
-            variant="primary"
-            onPress={handleBookAppointment}
-            disabled={!selectedPatient || !selectedDoctor || !selectedDate || !selectedTime}
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onFormRefresh} />
+            }
           >
-            Book Appointment
-          </Button>
+            <Select
+              label="Select Patient"
+              value={selectedPatient?.id || ''}
+              onChange={(value) => {
+                const patient = patients.find(p => p.id === value);
+                if (patient) selectPatient(patient);
+              }}
+              options={patients.map(p => ({ label: p.name, value: p.id.toString() }))}
+              placeholder="Choose a patient"
+            />
+            
+            <Select
+              label="Select Doctor"
+              value={selectedDoctor?.id || ''}
+              onChange={(value) => {
+                const doctor = doctors.find(d => d.id === value);
+                if (doctor) selectDoctor(doctor);
+              }}
+              options={doctors.map(d => ({ label: d.name, value: d.id }))}
+              placeholder="Choose a doctor"
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              className="mb-4"
+            >
+              <Text className="text-sm font-medium text-gray-700 mb-1">Date</Text>
+              <View className="border border-gray-300 rounded-md p-3">
+                <Text className="text-gray-500">
+                  {selectedDate || 'Select date'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={selectedDate ? new Date(selectedDate) : new Date()}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+                minimumDate={new Date()}
+                maximumDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+              />
+            )}
+
+            {selectedDate && availableTimeSlots.length > 0 && (
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">Available Time Slots</Text>
+                <View className="flex-row flex-wrap">
+                  {availableTimeSlots.map((slot) => (
+                    <TouchableOpacity
+                      key={slot.time}
+                      onPress={() => slot.isAvailable && selectTime(slot.time)}
+                      className={`mr-2 mb-2 px-3 py-2 rounded-md ${
+                        slot.isAvailable
+                          ? selectedTime === slot.time
+                            ? 'bg-blue-500'
+                            : 'bg-gray-200'
+                          : 'bg-gray-100 opacity-50'
+                      }`}
+                      disabled={!slot.isAvailable}
+                    >
+                      <Text
+                        className={`${
+                          slot.isAvailable
+                            ? selectedTime === slot.time
+                              ? 'text-white'
+                              : 'text-gray-700'
+                            : 'text-gray-500'
+                        }`}
+                      >
+                        {slot.time}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {error && (
+              <Text className="text-red-500 mb-4">{error}</Text>
+            )}
+
+            <Button
+              variant="primary"
+              onPress={handleBookAppointment}
+              disabled={!selectedPatient || !selectedDoctor || !selectedDate || !selectedTime || appointmentLoading}
+            >
+              {appointmentLoading ? 'Booking...' : 'Book Appointment'}
+            </Button>
+          </ScrollView>
         </Modal>
       </ScrollView>
     </View>
